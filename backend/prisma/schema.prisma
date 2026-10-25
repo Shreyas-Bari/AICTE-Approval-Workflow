@@ -1,14 +1,5 @@
-// Prisma schema scaffold for AICTE Approval Workflow Automation
+// Prisma schema for AICTE Approval Workflow Automation
 // Target relational database: Neon PostgreSQL
-//
-// IMPORTANT ARCHITECTURAL NOTE:
-// In accordance with project instructions and Section 7 of the scaffold baseline,
-// complete entity models are deferred pending contract reconciliation between:
-// - docs/project-baseline/refined/DATABASE_SCHEMA.md
-// - docs/project-baseline/refined/DATABASE_SCHEMA_REVISION_2.md
-// - docs/project-baseline/refined/api-specifications_FINAL.md
-//
-// Do not run migrations or connect to live Neon databases during this scaffold phase.
 
 generator client {
   provider = "prisma-client-js"
@@ -18,4 +9,227 @@ datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
+}
+
+// -----------------------------------------------------------------------------
+// Enums
+// -----------------------------------------------------------------------------
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  INACTIVE
+}
+
+enum InstitutionStatus {
+  ACTIVE
+  SUSPENDED
+  INACTIVE
+}
+
+enum MembershipStatus {
+  ACTIVE
+  SUSPENDED
+  ENDED
+}
+
+enum OutboxEventStatus {
+  PENDING
+  DISPATCHING
+  DISPATCHED
+  FAILED
+  DEAD_LETTER
+}
+
+// -----------------------------------------------------------------------------
+// Domain 1: Identity, RBAC & Institution Tenancy
+// -----------------------------------------------------------------------------
+
+/// Application-level user profile and actor record.
+/// Provider-neutral; authentication credentials/sessions are explicitly excluded pending Q-01.
+model User {
+  id          String     @id @default(uuid()) @db.Uuid
+  displayName String     @map("display_name")
+  email       String?
+  phone       String?
+  status      UserStatus @default(ACTIVE)
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+
+  // RBAC and Tenancy Relations
+  userRoles          UserRole[]              @relation("UserRoleUser")
+  grantedUserRoles   UserRole[]              @relation("UserRoleGrantedBy")
+  memberships        InstitutionMembership[] @relation("MembershipUser")
+  grantedMemberships InstitutionMembership[] @relation("MembershipGrantedBy")
+  auditEvents        AuditEvent[]            @relation("AuditEventActor")
+  outboxEvents       OutboxEvent[]           @relation("OutboxEventInitiator")
+
+  @@map("users")
+}
+
+/// Global role definition for system and operational access control.
+model Role {
+  id           String   @id @default(uuid()) @db.Uuid
+  key          String   @unique
+  name         String
+  description  String?
+  isSystemRole Boolean  @default(false) @map("is_system_role")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  rolePermissions RolePermission[]
+  userRoles       UserRole[]
+
+  @@map("roles")
+}
+
+/// Granular permission capability definition.
+model Permission {
+  id          String   @id @default(uuid()) @db.Uuid
+  key         String   @unique
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+/// Join table mapping permissions to roles. Cascades on role deletion.
+model RolePermission {
+  roleId       String   @map("role_id") @db.Uuid
+  permissionId String   @map("permission_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Restrict)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+/// Global role assignment to a user, with grant/revoke audit history.
+model UserRole {
+  id              String    @id @default(uuid()) @db.Uuid
+  userId          String    @map("user_id") @db.Uuid
+  roleId          String    @map("role_id") @db.Uuid
+  grantedByUserId String?   @map("granted_by_user_id") @db.Uuid
+  grantedAt       DateTime  @default(now()) @map("granted_at") @db.Timestamptz
+  revokedAt       DateTime? @map("revoked_at") @db.Timestamptz
+  grantReason     String?   @map("grant_reason")
+
+  user      User  @relation("UserRoleUser", fields: [userId], references: [id], onDelete: Restrict)
+  role      Role  @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  grantedBy User? @relation("UserRoleGrantedBy", fields: [grantedByUserId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+  @@index([roleId])
+  @@map("user_roles")
+}
+
+/// Institutional entity and tenant boundary.
+model Institution {
+  id              String            @id @default(uuid()) @db.Uuid
+  internalCode    String?           @unique @map("internal_code")
+  name            String
+  institutionType String            @map("institution_type")
+  status          InstitutionStatus @default(ACTIVE)
+  address         Json?             @db.JsonB
+  contactEmail    String?           @map("contact_email")
+  contactPhone    String?           @map("contact_phone")
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime          @updatedAt @map("updated_at") @db.Timestamptz
+
+  memberships InstitutionMembership[]
+  auditEvents AuditEvent[]
+
+  @@map("institutions")
+}
+
+/// User-to-institution access boundary and scoped role assignment.
+/// Confirmed Policy Option A: Users may hold multiple distinct active roles concurrently at an institution;
+/// duplicate active assignments of the same role are prevented via a PostgreSQL partial unique index.
+model InstitutionMembership {
+  id              String           @id @default(uuid()) @db.Uuid
+  institutionId   String           @map("institution_id") @db.Uuid
+  userId          String           @map("user_id") @db.Uuid
+  membershipRole  String           @map("membership_role")
+  status          MembershipStatus @default(ACTIVE)
+  validFrom       DateTime         @default(now()) @map("valid_from") @db.Timestamptz
+  validUntil      DateTime?        @map("valid_until") @db.Timestamptz
+  grantedByUserId String?          @map("granted_by_user_id") @db.Uuid
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime         @updatedAt @map("updated_at") @db.Timestamptz
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Restrict)
+  user        User        @relation("MembershipUser", fields: [userId], references: [id], onDelete: Restrict)
+  grantedBy   User?       @relation("MembershipGrantedBy", fields: [grantedByUserId], references: [id], onDelete: Restrict)
+
+  @@index([userId, status])
+  @@index([institutionId, status])
+  @@map("institution_memberships")
+}
+
+// -----------------------------------------------------------------------------
+// Domain 5: Operations, Audit & Outbox
+// -----------------------------------------------------------------------------
+
+/// Append-only audit record of material business, security, and administrative actions.
+model AuditEvent {
+  id                 String   @id @default(uuid()) @db.Uuid
+  occurredAt         DateTime @default(now()) @map("occurred_at") @db.Timestamptz
+  actorType          String   @map("actor_type")
+  actorUserId        String?  @map("actor_user_id") @db.Uuid
+  actorLabelSnapshot String?  @map("actor_label_snapshot")
+  actionKey          String   @map("action_key")
+  entityType         String   @map("entity_type")
+  entityId           String?  @map("entity_id") @db.Uuid
+  institutionId      String?  @map("institution_id") @db.Uuid
+  applicationId      String?  @map("application_id") @db.Uuid
+  outcome            String
+  reason             String?
+  beforeSummary      Json?    @map("before_summary") @db.JsonB
+  afterSummary       Json?    @map("after_summary") @db.JsonB
+  ruleVersionId      String?  @map("rule_version_id") @db.Uuid
+  requestId          String?  @map("request_id")
+  correlationId      String?  @map("correlation_id")
+  ipAddress          String?  @map("ip_address") @db.Inet
+  userAgent          String?  @map("user_agent")
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  actor       User?        @relation("AuditEventActor", fields: [actorUserId], references: [id], onDelete: Restrict)
+  institution Institution? @relation(fields: [institutionId], references: [id], onDelete: Restrict)
+
+  @@index([occurredAt(sort: Desc)])
+  @@index([entityType, entityId, occurredAt(sort: Desc)])
+  @@index([applicationId, occurredAt(sort: Desc)])
+  @@index([institutionId])
+  @@map("audit_events")
+}
+
+/// Durable asynchronous work intent committed transactionally with business state changes.
+model OutboxEvent {
+  id                String            @id @default(uuid()) @db.Uuid
+  eventKey          String            @map("event_key")
+  aggregateType     String            @map("aggregate_type")
+  aggregateId       String            @map("aggregate_id") @db.Uuid
+  payload           Json              @db.JsonB
+  schemaVersion     String            @map("schema_version")
+  createdAt         DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  availableAt       DateTime          @default(now()) @map("available_at") @db.Timestamptz
+  status            OutboxEventStatus @default(PENDING)
+  attemptCount      Int               @default(0) @map("attempt_count")
+  lastAttemptAt     DateTime?         @map("last_attempt_at") @db.Timestamptz
+  dispatchedAt      DateTime?         @map("dispatched_at") @db.Timestamptz
+  lastErrorCode     String?           @map("last_error_code")
+  idempotencyKey    String            @unique @map("idempotency_key")
+  correlationId     String?           @map("correlation_id")
+  initiatedByUserId String?           @map("initiated_by_user_id") @db.Uuid
+
+  initiatedBy User? @relation("OutboxEventInitiator", fields: [initiatedByUserId], references: [id], onDelete: Restrict)
+
+  @@index([status, availableAt])
+  @@index([aggregateType, aggregateId])
+  @@map("outbox_events")
 }
