@@ -1,0 +1,33 @@
+Created the consolidated **AICTE Antigravity UI/UX Specification — Final**.
+
+<box border radius="xl" padding={4} gap={3}>
+  <row align="center" gap={3}>
+    <box background="surface-secondary" radius="lg" size="52px" align="center" justify="center">
+      <icon name="file-text" size="2xl" />
+    </box>
+    <box flex="1" gap={1}>
+      <title size="lg">AICTE_Antigravity_UI_UX_Specification_FINAL.md</title>
+      <text color="secondary" size="sm">Markdown · 793 lines · Implementation specification</text>
+    </box>
+  </row>
+  The specification consolidates the selected Stitch screens, HTML references, design tokens, and the documented technical stack into one implementation guide for Antigravity.
+  <button block onClick={() => GenUI.openUrl("sandbox:/mnt/data/AICTE_Antigravity_UI_UX_Specification_FINAL.md")}> <icon name="download" size="sm" inline /> Download final specification </button>
+</box>
+
+## What's included
+
+- **Visual system:** light mode, navy/blue foundation, restrained semantic colors, Inter typography, rounded surfaces, spacing, borders and shadows.
+- **Screen specifications:** login, password recovery, institution dashboard, official scrutiny console, application review, deficiencies, resubmissions, compliance, EVC, committee proceedings, administrator console and audit trail.
+- **Component system:** shared navigation, tables, forms, status badges, document viewers, timelines, dialogs and empty/error states.
+- **Expanded library choices:** shadcn/ui as a foundation—not a restriction—plus Lucide React, Tabler Icons, Motion for React, GSAP, ReactBits, Lenis, TanStack Table, and alternatives for charts and forms.
+- **Technical alignment:** React, TypeScript, Vite, Tailwind CSS, React Router, Express APIs, Neon PostgreSQL, Prisma, authentication, RBAC and private document storage.
+- **Implementation instructions:** repository inspection, API integration, responsive behavior, accessibility, testing and acceptance criteria.
+
+## Important constraints preserved
+
+1. The Stitch screenshots and HTML are **visual references**, not the source of truth for application content or backend behavior.
+2. Existing API contracts, database models, permissions and approved regulatory workflows determine what each screen displays and allows.
+3. AI/OCR functionality remains out of scope until you explicitly authorize its implementation.
+4. Lenis, GSAP and other animation libraries are optional tools, not dependencies to install indiscriminately.
+
+**Next step:** Add this Markdown file to your project sources and give it to Antigravity alongside the existing technical specifications. Instruct it to inspect the repository and API contracts before implementing the UI, rather than generating a separate mock application.

@@ -1,0 +1,20 @@
+// Prisma schema scaffold for AICTE Approval Workflow Automation
+// Target relational database: Neon PostgreSQL
+//
+// IMPORTANT ARCHITECTURAL NOTE:
+// In accordance with project instructions and Section 7 of the scaffold baseline,
+// complete entity models are deferred pending contract reconciliation between:
+// - docs/project-baseline/refined/DATABASE_SCHEMA.md
+// - docs/project-baseline/refined/DATABASE_SCHEMA_REVISION_2.md
+// - docs/project-baseline/refined/api-specifications_FINAL.md
+//
+// Do not run migrations or connect to live Neon databases during this scaffold phase.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}

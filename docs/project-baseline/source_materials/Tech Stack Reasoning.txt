@@ -1,0 +1,174 @@
+# AICTE Workflow Automation — Full Tech Stack
+
+Based on our discussion, the stack below is designed for your **Integrated AICTE Approval Workflow Automation, Compliance Monitoring and Alert Management System**, with a focus on a working hackathon prototype, shared team access, low cost, and the ability to scale later.
+
+Your Neon project is already created, with PostgreSQL and Object Storage enabled. We'll build around that setup.
+
+## 1. Technology stack overview
+
+<box border radius="xl" padding={3} gap={3}>
+  <box background="surface-secondary" radius="lg" padding={3} gap={1}>
+    <row align="center" gap={2}>
+      <icon name="monitor" size="xl" />
+      **Frontend**
+    </row>
+    React + TypeScript + Vite
+    <text color="secondary" size="sm">Tailwind CSS · shadcn/ui · React Router</text>
+  </box>
+  <box align="center">
+    <icon name="arrow-down-up" size="lg" color="secondary" />
+  </box>
+  <box background="surface-secondary" radius="lg" padding={3} gap={1}>
+    <row align="center" gap={2}>
+      <icon name="server" size="xl" />
+      **Backend and business logic**
+    </row>
+    Node.js + Express + TypeScript
+    <text color="secondary" size="sm">REST APIs · Zod · RBAC · workflow rules</text>
+  </box>
+  <grid columns={2} gap={2}>
+    <grid-item>
+      <box border radius="lg" padding={3} gap={1} height="100%">
+        <icon name="database" size="xl" />
+        **Database**
+        <text>Neon PostgreSQL</text>
+        <text color="secondary" size="sm">Prisma ORM</text>
+      </box>
+    </grid-item>
+    <grid-item>
+      <box border radius="lg" padding={3} gap={1} height="100%">
+        <icon name="folder" size="xl" />
+        **Document storage**
+        <text>Neon Object Storage</text>
+        <text color="secondary" size="sm">Private `uploads` bucket</text>
+      </box>
+    </grid-item>
+  </grid>
+  <grid columns={2} gap={2}>
+    <grid-item>
+      <box border radius="lg" padding={3} gap={1} height="100%">
+        <icon name="shield-check" size="xl" />
+        **Security**
+        <text>Auth + RBAC</text>
+        <text color="secondary" size="sm">Secure sessions and permissions</text>
+      </box>
+    </grid-item>
+    <grid-item>
+      <box border radius="lg" padding={3} gap={1} height="100%">
+        <icon name="bell" size="xl" />
+        **Automation**
+        <text>Redis + BullMQ</text>
+        <text color="secondary" size="sm">Scheduled reminders and retries</text>
+      </box>
+    </grid-item>
+  </grid>
+</box>
+
+## 2. Detailed stack and why we're using each technology
+
+| Layer | Technology | Purpose |
+|---|---|---|
+| Frontend framework | **React** | Build dashboards, forms, application tracking and officer portals. |
+| Programming language | **TypeScript** | Catch type errors and maintain complex workflow logic. |
+| Frontend tooling | **Vite** | Fast development server and frontend builds. |
+| Styling | **Tailwind CSS** | Build responsive layouts quickly. |
+| UI components | **shadcn/ui** | Consistent forms, tables, dialogs, badges and dashboards. |
+| Routing | **React Router** | Navigate between institution, officer and admin pages. |
+| Backend runtime | **Node.js** | Run server-side JavaScript/TypeScript. |
+| Backend framework | **Express** | Create REST APIs and process application requests. |
+| Input validation | **Zod** | Validate request bodies, query parameters and form data. |
+| Database | **Neon PostgreSQL** | Store institutions, applications, approval stages, users, deadlines and audit logs. |
+| ORM | **Prisma** | Query PostgreSQL, define models and manage database migrations. |
+| Authentication | **Better Auth** | Handle sign-in, sessions and user identity. |
+| Authorization | **Custom RBAC middleware** | Restrict operations according to user roles and permissions. |
+| Document storage | **Neon Object Storage** | Store uploaded PDFs, certificates and evidence in a private bucket. |
+| Background jobs | **BullMQ + Redis** | Schedule reminders, retry failed jobs and process escalations. |
+| Email notifications | **Nodemailer + SMTP provider** | Send deficiency notices, deadline reminders and status updates. |
+| Charts | **Recharts** | Display application counts, pending cases and compliance metrics. |
+| Calendar | **FullCalendar** | Display deadlines, inspections and scheduled events. |
+| API documentation | **Swagger / OpenAPI** | Document endpoints for the development team. |
+| Version control | **Git + GitHub** | Collaborate on code, review changes and maintain versions. |
+| Testing | **Vitest + Supertest + Playwright** | Test logic, backend endpoints and complete user flows. |
+
+**Note:** Better Auth is the proposed application-level authentication library; you don't need to enable the separate Better Auth option on Neon just to use an authentication library in your application. Confirm the library's current adapter and session configuration before implementation.
+
+## 3. How the major components work together
+
+<box border radius="lg" padding={3} gap={2} align="center">
+  <box background="surface-secondary" radius="md" padding={3} width="100%" align="center">
+    **React dashboard**
+    <text color="secondary" size="sm">Institutions · Officers · Admins</text>
+  </box>
+  <icon name="arrow-down" color="secondary" size="lg" />
+  <box border radius="md" padding={3} width="100%" align="center">
+    **Express REST API**
+    <text color="secondary" size="sm">Authentication · Zod validation · RBAC</text>
+  </box>
+  <icon name="arrow-down" color="secondary" size="lg" />
+  <box background="surface-secondary" radius="md" padding={3} width="100%" align="center">
+    **Workflow and compliance engine**
+    <text color="secondary" size="sm">Stage transitions · Rules · Deadlines · Audit trail</text>
+  </box>
+  <grid columns={2} gap={2}>
+    <grid-item>
+      <box border radius="md" padding={3} align="center" gap={1} height="100%">
+        <icon name="database" size="xl" />
+        **Neon PostgreSQL**
+        <text color="secondary" size="sm">Structured records and workflow history</text>
+      </box>
+    </grid-item>
+    <grid-item>
+      <box border radius="md" padding={3} align="center" gap={1} height="100%">
+        <icon name="folder" size="xl" />
+        **Neon Object Storage**
+        <text color="secondary" size="sm">Private document files</text>
+      </box>
+    </grid-item>
+  </grid>
+  <box border radius="md" padding={3} width="100%" align="center" gap={1}>
+    <icon name="bell" size="xl" />
+    **Background worker and notifications**
+    <text color="secondary" size="sm">BullMQ + Redis, with email delivery through SMTP</text>
+  </box>
+</box>
+
+The workflow engine is particularly important: it should enforce valid transitions between application stages, deadlines, deficiency handling, resubmissions, escalation rules and role-specific decisions. The applicable AICTE handbook and official directions should drive the configurable rules. The software should not independently make official approval decisions.
+
+## 4. What is free, and what do you need to install?
+
+| Component | Setup |
+|---|---|
+| React, Vite, Express, TypeScript | Install through npm |
+| Tailwind CSS, shadcn/ui, Zod, Prisma | Install through npm and configure |
+| PostgreSQL | Already hosted by Neon; no local server installation required |
+| Document storage | Neon Object Storage; verify current quotas and access requirements |
+| Git | Install Git locally |
+| GitHub | Create a shared repository |
+| Redis + BullMQ | Optional initially; use a Redis service when you implement background jobs |
+| Email provider | Configure an SMTP account when notifications are implemented |
+| Deployment services | Choose later, after the local prototype works |
+
+Free allowances, quotas and billing requirements vary by provider. In particular, verify the current Neon Object Storage terms before depending on it for your team's documents.
+
+## 5. Recommended implementation order
+
+<list marker="number" gap={2}>
+  <list-item>**Project foundation:** Set up React, Vite, TypeScript, Express, GitHub and environment variables.</list-item>
+  <list-item>**Database:** Connect Prisma to your Neon PostgreSQL database and create the initial schema.</list-item>
+  <list-item>**Authentication and roles:** Implement sign-in, sessions and permissions for institutions, scrutiny officers, coordinators and administrators.</list-item>
+  <list-item>**Core workflows:** Implement application submission, document requirements, scrutiny, deficiency notices, resubmission and status tracking.</list-item>
+  <list-item>**Documents:** Integrate the private Neon Object Storage bucket with server-side permission checks.</list-item>
+  <list-item>**Compliance and alerts:** Add deadlines, configurable rules, email notifications and background jobs.</list-item>
+  <list-item>**Dashboards and testing:** Add charts, audit logs, reporting and end-to-end tests.</list-item>
+  <list-item>**Deployment:** Deploy the frontend, backend, worker and any required shared services.</list-item>
+</list>
+
+## 6. Keep these optional until needed
+
+- **Redis + BullMQ:** Add when you implement reliable scheduled reminders and escalations. For a very early demo, a simpler scheduler may suffice.
+- **OCR and AI document extraction:** Add Python + FastAPI or a suitable document-processing service only if automated extraction is a required feature.
+- **Realtime updates:** Keep disabled until you need live status updates without polling or refreshing.
+- **NGINX:** Not needed initially if you use managed hosting; consider it if you later self-host services.
+- **Camunda:** Not necessary for the initial version. A custom, configurable workflow engine is simpler to start with.
+
+**Final recommendation:** Build the first version with React + TypeScript, Express, Neon PostgreSQL + Prisma, private Neon Object Storage, and authentication/RBAC. Add the background worker and email alerts when the core workflow is stable. This gives your team a manageable starting point without requiring you to deploy every component on day one.

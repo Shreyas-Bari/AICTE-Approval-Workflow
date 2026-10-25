@@ -1,0 +1,32 @@
+{
+  "name": "aicte-approval-workflow",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Integrated AICTE Approval Workflow Automation, Compliance Monitoring and Alert Management System",
+  "type": "module",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "npm run dev:frontend",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "build": "npm run build --workspaces",
+    "build:frontend": "npm run build --workspace=frontend",
+    "build:backend": "npm run build --workspace=backend",
+    "test": "npm run test --workspaces --if-present",
+    "test:frontend": "npm run test --workspace=frontend",
+    "test:backend": "npm run test --workspace=backend",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspace=frontend && npm run typecheck --workspace=backend"
+  },
+  "keywords": [
+    "aicte",
+    "approval-workflow",
+    "compliance",
+    "regulatory-automation"
+  ],
+  "author": "",
+  "license": "UNLICENSED"
+}

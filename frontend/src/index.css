@@ -1,0 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #F6F8FC;
+  --surface: #FFFFFF;
+  --surface-subtle: #EEF4FF;
+  --surface-muted: #F1F5F9;
+  --text-primary: #172033;
+  --text-strong: #17243A;
+  --text-secondary: #64748B;
+  --border: #E3E8F0;
+  --border-strong: #C5C6CD;
+  --primary: #315EBD;
+  --primary-hover: #264B99;
+  --primary-active: #1E3C7B;
+  --navy: #17243A;
+  --success: #19845A;
+  --success-bg: #E8F5EE;
+  --warning: #B7791F;
+  --warning-bg: #FEF7EA;
+  --danger: #C24141;
+  --danger-bg: #FDF1F1;
+  --info: #315EBD;
+  --info-bg: #EEF4FF;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--background);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
