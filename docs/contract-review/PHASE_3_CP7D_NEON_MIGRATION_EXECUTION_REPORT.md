@@ -234,7 +234,7 @@ SELECT COUNT(*)::int FROM "<table_name>";
 - **Decision Q-09 (RBAC Bootstrap Catalogue):**
   Because row count in `roles` and `permissions` is 0, no unapproved statutory roles or invented permissions have been introduced into the database. Decision Q-09 remains open for explicit project owner resolution prior to seeding.
 - **Decision Q-01 (Authentication Strategy):**
-  The `users` table contains zero password hashes, tokens, or credential fields. No session tables or `auth_identities` exist. Decision Q-01 remains open without pre-emption.
+  The `users` table contains zero password hashes, tokens, or credential fields. No session tables or `auth_identities` exist. Decision Q-01 has been formally resolved in favor of Option B with a decoupled `user_credentials` table (see [`DECISION_RECORD_Q01_AUTHENTICATION_STRATEGY.md`](file:///c:/Users/shrey/Desktop/AICTE-Approval-Workflow/docs/contract-review/DECISION_RECORD_Q01_AUTHENTICATION_STRATEGY.md)); no credential tables or authentication routes have been implemented in the database yet.
 
 ---
 

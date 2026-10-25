@@ -34,8 +34,8 @@ This review evaluates whether the existing foundational identity, RBAC, tenancy,
    The migration is entirely non-destructive (contains zero `DROP`, `TRUNCATE`, or destructive `ALTER` statements) and transactional. It is safe to apply to an empty database. All foreign key references permit clean insertion ordering without non-nullable circular dependencies.
 4. **Dual-Endpoint Workflow Confirmed:**
    The Prisma configuration properly separates pooled runtime queries (`DATABASE_URL`, port 6543 via PgBouncer) from direct migration DDL (`DIRECT_URL`, port 5432 to compute node). This prevents advisory lock and transaction state failures inherent to connection poolers.
-5. **Decoupling from Unresolved Decisions Q-01 & Q-09:**
-   Neither the unresolved authentication strategy ([**Q-01**](file:///c:/Users/shrey/Desktop/AICTE-Approval-Workflow/docs/contract-review/PHASE_2_CONTRACT_REVIEW.md#L590)) nor the unresolved RBAC bootstrap catalogue ([**Q-09**](file:///c:/Users/shrey/Desktop/AICTE-Approval-Workflow/docs/contract-review/PHASE_3_CP5_DATABASE_SEED_AND_RBAC_REVIEW.md#L86)) blocks applying this foundational DDL migration. The schema models represent strictly provider-neutral relational tables; zero credentials or seed rows are introduced by the migration DDL.
+5. **Decoupling from Decision Q-01 (Now Resolved) & Decision Q-09 (Unresolved):**
+   Neither the authentication strategy ([**Q-01**](file:///c:/Users/shrey/Desktop/AICTE-Approval-Workflow/docs/contract-review/PHASE_2_CONTRACT_REVIEW.md#L590), subsequently resolved in favor of Option B in [`DECISION_RECORD_Q01_AUTHENTICATION_STRATEGY.md`](file:///c:/Users/shrey/Desktop/AICTE-Approval-Workflow/docs/contract-review/DECISION_RECORD_Q01_AUTHENTICATION_STRATEGY.md)) nor the unresolved RBAC bootstrap catalogue ([**Q-09**](file:///c:/Users/shrey/Desktop/AICTE-Approval-Workflow/docs/contract-review/PHASE_3_CP5_DATABASE_SEED_AND_RBAC_REVIEW.md#L86)) blocks applying this foundational DDL migration. The schema models represent strictly provider-neutral relational tables; zero credentials or seed rows are introduced by the migration DDL.
 
 ---
 
@@ -178,7 +178,7 @@ flowchart TD
 
 ## 5. Owner-Decision Dependency Analysis
 
-A critical question for this review is whether unresolved project decisions **Q-01** (Authentication Strategy) and **Q-09** (RBAC Bootstrap Catalogue) block applying the schema migration itself, or only subsequent code and seed phases.
+A critical question for this review is whether project decisions **Q-01** (Authentication Strategy, subsequently resolved in favor of Option B) and **Q-09** (RBAC Bootstrap Catalogue, unresolved) block applying the schema migration itself, or only subsequent code and seed phases.
 
 ```mermaid
 flowchart LR
@@ -206,14 +206,14 @@ flowchart LR
 
 ### 5.1 Analysis of Decision Q-01 (Authentication Strategy)
 - **Status of Q-01:**
-  [`FINAL_DECISIONS_AND_SUPERSEDING_CORRECTIONS.md`](file:///c:/Users/shrey/Desktop/AICTE-Approval-Workflow/docs/project-baseline/refined/FINAL_DECISIONS_AND_SUPERSEDING_CORRECTIONS.md) (§1, §2) confirmed that Better Auth is strictly excluded, and approved the direction of either an Auth.js-compatible solution or custom Express JWT with secure HTTP-only cookies. The choice between these two approaches (Decision **Q-01**) remains open.
+  [`FINAL_DECISIONS_AND_SUPERSEDING_CORRECTIONS.md`](file:///c:/Users/shrey/Desktop/AICTE-Approval-Workflow/docs/project-baseline/refined/FINAL_DECISIONS_AND_SUPERSEDING_CORRECTIONS.md) (§1, §2) confirmed that Better Auth is strictly excluded, and approved the direction of either an Auth.js-compatible solution or custom Express JWT with secure HTTP-only cookies. *(Decision Q-01 was subsequently resolved by the project owner in favor of Option B in [`DECISION_RECORD_Q01_AUTHENTICATION_STRATEGY.md`](file:///c:/Users/shrey/Desktop/AICTE-Approval-Workflow/docs/contract-review/DECISION_RECORD_Q01_AUTHENTICATION_STRATEGY.md)).*
 - **Does Q-01 Block Applying the Schema Migration?**
   **NO. Applying the migration is NOT blocked by Q-01.**
 - **Authoritative Baseline Distinction:**
   [`PHASE_2_CONTRACT_REVIEW.md`](file:///c:/Users/shrey/Desktop/AICTE-Approval-Workflow/docs/contract-review/PHASE_2_CONTRACT_REVIEW.md) (§1.2 item 3, line 21; §3, lines 86–88; §8, line 590; §11, line 659) explicitly establishes:
   > *"In accordance with unresolved owner decision Q-01, the database identity and RBAC models (`users`, `roles`, `permissions`, `role_permissions`, `user_roles`, `institutions`, and `institution_memberships`) represent **provider-neutral relational foundations**. Session management tables, token rotation storage, provider identity mappings (`auth_identities`), and authentication-library choices are **NOT mandatory** prior to the owner decision on Q-01. The team preserves the full option to prepare, migrate, and seed provider-neutral user, role, permission, tenant membership, and audit foundations in PostgreSQL completely independently of the eventual authentication library or session delivery mechanism."*
 - **What Q-01 Actually Blocks:**
-  Q-01 blocks creating provider-specific credential tables (`auth_identities` per `DATABASE_SCHEMA_REVISION_2.md` §4.2), session tables, refresh-token rotation tables, and implementing authentication route handlers/middleware. None of these exist in `init_identity_rbac_foundation`.
+  At the time of this readiness review, Decision Q-01 was pending, and blocked creating provider-specific credential tables (`auth_identities` per `DATABASE_SCHEMA_REVISION_2.md` §4.2), session tables, refresh-token rotation tables, and authentication route handlers/middleware. Following owner resolution of Q-01 in favor of Option B with a separate `user_credentials` table (see [`DECISION_RECORD_Q01_AUTHENTICATION_STRATEGY.md`](file:///c:/Users/shrey/Desktop/AICTE-Approval-Workflow/docs/contract-review/DECISION_RECORD_Q01_AUTHENTICATION_STRATEGY.md)), these auth models remain to be implemented in a subsequent phase; none were included in `init_identity_rbac_foundation`.
 
 ### 5.2 Analysis of Decision Q-09 (RBAC Bootstrap Catalogue)
 - **Status of Q-09:**
@@ -242,7 +242,7 @@ While Q-01 and Q-09 do not block the DDL migration, two genuine prerequisites mu
 |---|---|---|
 | **Apply `init_identity_rbac_foundation` to Neon `development` branch** | **GO** | • Static SQL matches schema 100%.<br>• Fully non-destructive and transactional.<br>• Verified dual-endpoint configuration (`DIRECT_URL`).<br>• Decoupled from Q-01 and Q-09.<br>• *Condition:* Awaits owner execution authorization. |
 | **Execute Database Seed Scripts** | **NO-GO / HOLD** | **BLOCKED by Decision Q-09.** Seeding specific roles/permissions before the owner confirms the RBAC catalogue is strictly prohibited. |
-| **Implement Authentication / Session Models** | **NO-GO / HOLD** | **BLOCKED by Decision Q-01.** Introducing `auth_identities`, session tables, or login logic before the owner selects the auth approach is strictly prohibited. |
+| **Implement Authentication / Session Models** | **NO-GO / HOLD** | **BLOCKED by Decision Q-01 (at the time of review).** Introducing `auth_identities`, session tables, or login logic before the owner selects the auth approach is strictly prohibited *(subsequently resolved in favor of Option B in [`DECISION_RECORD_Q01_AUTHENTICATION_STRATEGY.md`](file:///c:/Users/shrey/Desktop/AICTE-Approval-Workflow/docs/contract-review/DECISION_RECORD_Q01_AUTHENTICATION_STRATEGY.md))*. |
 
 ### 6.2 Recommended Execution Workflow (Upon Owner Authorization)
 When the project owner authorizes applying the migration to the Neon `development` branch, the operator should execute the following sequence:
