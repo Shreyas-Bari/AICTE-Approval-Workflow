@@ -26,7 +26,7 @@ In strict accordance with Task 3 and Task 5:
 4. `DATABASE_SCHEMA_REVISION_2.md` (§E.2, line 2513) explicitly classifies: **"Decisions still blocked — do not guess: 2. Exact role/permission matrix, organisation hierarchy, and whether users can hold multiple institution-scoped roles."**
 5. Implementing a seed script that inserts arbitrary roles or fabricated permissions would directly violate canonical governance and invent statutory workflow behavior.
 
-Therefore, under **Task 5**, creating this focused review document to identify the missing owner decisions (Decision **Q-02**) and formulate a minimal safe seed plan is the authoritatively mandated action.
+Therefore, under **Task 5**, creating this focused review document to identify the missing owner decisions (Decision **Q-09**) and formulate a minimal safe seed plan is the authoritatively mandated action.
 
 ---
 
@@ -65,7 +65,7 @@ flowchart TD
     end
 
     subgraph GovernanceStatus["Governance Status (FINAL_DECISIONS & API Spec)"]
-        Blocked["BLOCKED / UNRESOLVED (Decision Q-02)"]
+        Blocked["BLOCKED / UNRESOLVED (Decision Q-09)"]
         NoGuess["Must NOT be hard-coded or guessed"]
     end
 
@@ -83,18 +83,18 @@ flowchart TD
 
 ---
 
-## 4. Unresolved Owner Decisions (Decision Q-02: RBAC Bootstrap)
+## 4. Unresolved Owner Decisions (Decision Q-09: RBAC Bootstrap)
 
 To unblock deterministic database seeding, the project owner must resolve the following concrete decisions:
 
-### Q-02.1: Initial Technical Role Catalogue
+### Q-09.1: Initial Technical Role Catalogue
 Confirm whether the initial development database should seed the following baseline system roles:
 - `system_administrator`: Technical maintenance, system monitoring, audit review. (Strictly prohibited from application approvals or regulatory decisions).
 - `institution_user`: Standard applicant identity representing technical institutions.
 - `scrutiny_reviewer`: Verification officer for initial document and deficiency scrutiny.
 - `decision_authority`: Authorised statutory officer recording official Council recommendations.
 
-### Q-02.2: Permission Naming Convention & Taxonomy
+### Q-09.2: Permission Naming Convention & Taxonomy
 Confirm the standard permission naming syntax. The recommended pattern is `<domain>:<resource>:<action>`:
 - `application:submission:create`
 - `application:submission:read`
@@ -104,10 +104,10 @@ Confirm the standard permission naming syntax. The recommended pattern is `<doma
 - `system:audit:read`
 - `system:role:assign`
 
-### Q-02.3: Baseline Role-Permission Mapping Matrix
+### Q-09.3: Baseline Role-Permission Mapping Matrix
 Confirm the explicit assignment of permission keys to approved roles, ensuring strict adherence to separation of duties.
 
-### Q-02.4: Fictional Demo Seed Scope
+### Q-09.4: Fictional Demo Seed Scope
 Confirm the extent of mock reference data permitted in local development:
 - Purely fictional test institutions (e.g., `MOCK_INSTITUTION_001` — *"Fictional Demo Engineering College"*).
 - Fictional provider-neutral user profiles without passwords or real personal details.
@@ -115,9 +115,9 @@ Confirm the extent of mock reference data permitted in local development:
 
 ---
 
-## 5. Proposed Minimal Safe Seed Plan (Contingent on Q-02)
+## 5. Proposed Minimal Safe Seed Plan (Contingent on Q-09)
 
-Upon project owner confirmation of Decision Q-02, the following deterministic, idempotent seeding implementation will be deployed:
+Upon project owner confirmation of Decision Q-09, the following deterministic, idempotent seeding implementation will be deployed:
 
 ### 5.1 Architecture & Safety Principles
 1. **Idempotency via `upsert`:** Every insert operation uses Prisma's `upsert` keyed on unique fields (`Role.key`, `Permission.key`, composite `RolePermission.roleId_permissionId`), allowing the seed script to be run repeatedly without duplicating records or throwing unique-constraint errors.
@@ -144,7 +144,7 @@ interface SeedRole {
   permissions: string[];
 }
 
-// Minimal technical reference catalogue proposed for Q-02 confirmation:
+// Minimal technical reference catalogue proposed for Q-09 confirmation:
 const PROPOSED_PERMISSIONS = [
   { key: 'application:read', description: 'Read permitted application records' },
   { key: 'application:submit', description: 'Submit or resubmit application packages' },
@@ -254,7 +254,7 @@ export async function runSeed(client: PrismaClient = prisma) {
 
 ## 6. Verification and Implementation Prerequisites
 
-When Decision Q-02 is formally confirmed by the project owner:
+When Decision Q-09 is formally confirmed by the project owner:
 1. **Prerequisites Gate:** Neon database migrations (`init_identity_rbac_foundation`) must be formally reviewed and applied to the Neon `development` branch before the seed script can interact with real tables.
 2. **Package Configuration:** Configure `"prisma": { "seed": "tsx prisma/seed.ts" }` and script `"db:seed": "prisma db seed"` in `backend/package.json`.
 3. **Unit Testing:** Implement `backend/tests/seed.test.ts` mocking Prisma Client calls to verify that:
@@ -272,5 +272,5 @@ When Decision Q-02 is formally confirmed by the project owner:
 | **Phase 3 CP-2** | Identity, RBAC, Tenancy Prisma schema & migration SQL | **Verified & Committed** |
 | **Phase 3 CP-3** | Authentication design review (Q-01 alternatives, concurrency, suspension) | **Verified & Committed** |
 | **Phase 3 CP-4** | Prisma Client singleton, lifecycle management, liveness & readiness probes | **Verified & Committed** |
-| **Phase 3 CP-5** | Database seed strategy and RBAC bootstrap review (Decision Q-02 audit) | **Complete (This Review Document)** |
-| **Phase 3 CP-6** | Migration application to Neon `development` branch & seed execution (Post Q-01/Q-02) | **Pending Owner Alignment** |
+| **Phase 3 CP-5** | Database seed strategy and RBAC bootstrap review (Decision Q-09 audit) | **Complete (This Review Document)** |
+| **Phase 3 CP-6** | Migration application to Neon `development` branch & seed execution (Post Q-01/Q-09) | **Pending Owner Alignment** |
