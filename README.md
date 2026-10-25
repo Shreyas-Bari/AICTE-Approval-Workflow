@@ -138,7 +138,11 @@ npm install
 The backend requires local environment variables for custom configurations. Copy the template:
 
 ```bash
+# macOS / Linux / PowerShell:
 cp backend/.env.example backend/.env
+
+# Windows Command Prompt:
+copy backend\.env.example backend\.env
 ```
 
 *Note: For the initial scaffold, default fallbacks are provided, allowing the backend to start and pass health tests without an active `.env` file.*
