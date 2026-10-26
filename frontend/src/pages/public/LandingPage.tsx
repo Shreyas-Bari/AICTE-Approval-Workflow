@@ -1,248 +1,165 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import {
-  Server,
-  Layers,
-  Database,
-  Radio,
-  FileCheck2,
-  RefreshCw,
+  FileText,
   ShieldCheck,
+  Users,
   CheckCircle2,
-  XCircle,
-  Clock
+  ArrowRight,
+  AlertCircle,
+  BookOpen,
 } from 'lucide-react';
 import { StatusCard } from '../../components/shared/StatusCard';
 import { Badge } from '../../components/ui/badge';
-import { Button } from '../../components/ui/button';
-import { checkBackendHealth } from '../../services/api';
-import { ApiHealthStatus } from '../../types';
 
 export const LandingPage: React.FC = () => {
-  const [health, setHealth] = useState<ApiHealthStatus | null>(null);
-  const [healthError, setHealthError] = useState<string | null>(null);
-  const [isLoadingHealth, setIsLoadingHealth] = useState<boolean>(false);
-
-  const performHealthCheck = async () => {
-    setIsLoadingHealth(true);
-    setHealthError(null);
-    try {
-      const data = await checkBackendHealth();
-      setHealth(data);
-    } catch (err) {
-      setHealth(null);
-      setHealthError(err instanceof Error ? err.message : 'Failed to reach API endpoint');
-    } finally {
-      setIsLoadingHealth(false);
-    }
-  };
-
-  useEffect(() => {
-    performHealthCheck();
-  }, []);
-
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {/* Hero Section */}
-      <section className="bg-surface border border-border rounded-2xl p-8 sm:p-10 shadow-xs relative overflow-hidden">
-        <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-surface-subtle rounded-full blur-3xl pointer-events-none opacity-60" />
+      <section className="bg-surface border border-border rounded-2xl p-8 sm:p-12 shadow-xs relative overflow-hidden">
+        {/* Soft decorative glow */}
+        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-72 h-72 bg-surface-subtle rounded-full blur-3xl pointer-events-none opacity-70" />
 
-        <div className="relative z-10 max-w-3xl">
-          <div className="flex flex-wrap gap-2 mb-4">
-            <Badge variant="subtle">
-              Initial Project Skeleton &bull; Phase 0 Foundation
-            </Badge>
-            <Badge variant="default" className="text-text-secondary bg-surface-muted">
-              Independent Prototype &bull; Not Official AICTE Portal
+        <div className="relative z-10 max-w-3xl space-y-5">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="subtle">AICTE Approval Workflow</Badge>
+            <Badge variant="default" className="text-text-secondary bg-surface-muted border-border/80">
+              Independent Prototype &bull; SIH26262
             </Badge>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-text-strong tracking-tight">
-            Integrated AICTE Approval Workflow Automation &amp; Compliance System
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-text-strong tracking-tight leading-tight">
+            Integrated Regulatory Approval &amp; Compliance Workflow System
           </h1>
 
-          <p className="mt-4 text-base text-text-secondary leading-relaxed">
-            An independent research and workflow automation prototype designed for the AICTE Approval
-            Workflow Automation problem statement (SIH26262), modeling institutional application
-            submission, multi-tier scrutiny queues, expert visit coordination (EVC), and compliance tracking.
+          <p className="text-base sm:text-lg text-text-secondary leading-relaxed">
+            An independent workflow automation prototype modeling the institutional approval lifecycle:
+            multi-tier scrutiny work queues, deficiency tracking, expert visit committee (EVC)
+            coordination, and statutory compliance monitoring in alignment with the AICTE Approval Process
+            Handbook.
           </p>
 
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Button
-              variant="primary"
-              onClick={performHealthCheck}
-              disabled={isLoadingHealth}
-              className="gap-2"
+          {/* Primary Action Group */}
+          <div className="pt-2 flex flex-wrap items-center gap-3">
+            <Link
+              to="/login"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold text-white bg-primary hover:bg-primary-hover active:bg-primary-active shadow-xs transition-colors"
             >
-              <RefreshCw className={`w-4 h-4 ${isLoadingHealth ? 'animate-spin' : ''}`} />
-              Test API Health
-            </Button>
+              <span>Sign In to Portal</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
             <a
-              href="#specifications"
-              className="inline-flex items-center justify-center px-4 py-2 border border-border text-sm font-medium rounded-md text-text-primary bg-surface hover:bg-surface-muted transition-colors"
+              href="#workflow"
+              className="inline-flex items-center justify-center px-5 py-3 rounded-lg text-sm font-medium text-text-primary bg-surface hover:bg-surface-muted border border-border transition-colors"
             >
-              View Approved Specifications
+              Explore Workflow Modules
             </a>
           </div>
-        </div>
-      </section>
 
-      {/* Live Health Status Card */}
-      <section className="grid grid-cols-1 gap-6">
-        <StatusCard
-          title="Backend Process Health Check"
-          icon={<Server className="w-5 h-5" />}
-          badge={
-            health ? (
-              <Badge variant="success" className="gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Online (200 OK)
-              </Badge>
-            ) : healthError ? (
-              <Badge variant="danger" className="gap-1">
-                <XCircle className="w-3.5 h-3.5" /> API Offline
-              </Badge>
-            ) : (
-              <Badge variant="warning" className="gap-1">
-                <Clock className="w-3.5 h-3.5" /> Probing...
-              </Badge>
-            )
-          }
-        >
-          <div className="mt-2 text-sm">
-            {health ? (
-              <div className="space-y-2">
-                <p className="text-text-primary font-medium">
-                  Backend API server process is responding via <code className="bg-surface-muted px-1.5 py-0.5 rounded text-xs font-mono">GET /api/health</code>.
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-                  <div className="bg-surface-subtle p-3 rounded-lg border border-border/60">
-                    <span className="text-xs text-text-secondary block">Status</span>
-                    <span className="font-semibold text-success">{health.status.toUpperCase()}</span>
-                  </div>
-                  <div className="bg-surface-subtle p-3 rounded-lg border border-border/60">
-                    <span className="text-xs text-text-secondary block">API Process</span>
-                    <span className="font-semibold text-text-strong">Online</span>
-                  </div>
-                  <div className="bg-surface-subtle p-3 rounded-lg border border-border/60">
-                    <span className="text-xs text-text-secondary block">Uptime</span>
-                    <span className="font-semibold text-text-strong">{health.uptimeSeconds}s</span>
-                  </div>
-                  <div className="bg-surface-subtle p-3 rounded-lg border border-border/60">
-                    <span className="text-xs text-text-secondary block">Version</span>
-                    <span className="font-semibold text-text-strong">{health.version}</span>
-                  </div>
-                </div>
-              </div>
-            ) : healthError ? (
-              <div className="text-danger bg-danger-bg p-3 rounded-lg border border-danger/20">
-                <p className="font-medium">Connection Error:</p>
-                <p className="text-xs mt-1 font-mono">{healthError}</p>
-                <p className="text-xs mt-2 text-text-secondary">
-                  Ensure the backend development server is running via <code className="bg-surface px-1 py-0.5 rounded">npm run dev:backend</code> on port 5000.
-                </p>
-              </div>
-            ) : (
-              <p className="text-text-secondary">Checking connectivity with the backend service...</p>
-            )}
+          {/* Prototype Notice Strip */}
+          <div className="pt-6 border-t border-border flex items-start gap-2.5 text-xs text-text-secondary leading-relaxed">
+            <AlertCircle className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+            <p>
+              <strong className="text-text-primary">Research &amp; Demonstration Prototype:</strong> Developed
+              for the AICTE Approval Workflow Automation problem statement (SIH26262). Not an official service
+              of the All India Council for Technical Education. All formal regulatory decisions remain
+              exclusively with authorized officials.
+            </p>
           </div>
-        </StatusCard>
+        </div>
       </section>
 
-      {/* Architecture Foundations Grid */}
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-text-strong">
-          Architectural Foundation &amp; Technology Stack
-        </h2>
+      {/* Regulated Workflow Subsystems Grid */}
+      <section id="workflow" className="space-y-5">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold text-text-strong tracking-tight">
+            Workflow Subsystems &amp; Lifecycle Modules
+          </h2>
+          <p className="text-sm text-text-secondary mt-1">
+            Core functional stages modeled after statutory approval processes and handbook requirements.
+          </p>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <StatusCard
-            title="Frontend Application"
-            icon={<Layers className="w-5 h-5" />}
-            badge={<Badge variant="subtle">React 18 + Vite</Badge>}
+            title="Institutional Applications"
+            icon={<FileText className="w-5 h-5 text-primary" />}
+            badge={<Badge variant="subtle">Institution Portal</Badge>}
           >
-            <p className="mt-1">
-              TypeScript, Tailwind CSS utility styling, shadcn/ui design tokens, and React Router navigation.
+            <p className="leading-relaxed">
+              Application drafting, structured institutional data entry, document repository management,
+              and formal submission tracking for technical institutions.
             </p>
           </StatusCard>
 
           <StatusCard
-            title="Backend API Service"
-            icon={<Server className="w-5 h-5" />}
-            badge={<Badge variant="subtle">Express + TS</Badge>}
+            title="Multi-Tier Scrutiny Queues"
+            icon={<ShieldCheck className="w-5 h-5 text-primary" />}
+            badge={<Badge variant="subtle">Official Console</Badge>}
           >
-            <p className="mt-1">
-              Modular REST API, Zod schema validation, central error handling, and structured request logging.
+            <p className="leading-relaxed">
+              Casework distribution across scrutiny officials, structured deficiency notice generation,
+              observation recording, and institutional resubmission reviews.
             </p>
           </StatusCard>
 
           <StatusCard
-            title="Relational Persistence"
-            icon={<Database className="w-5 h-5" />}
-            badge={<Badge variant="warning">Neon + Prisma</Badge>}
+            title="Committee Coordination"
+            icon={<Users className="w-5 h-5 text-primary" />}
+            badge={<Badge variant="subtle">Inspection Workflow</Badge>}
           >
-            <p className="mt-1">
-              Neon PostgreSQL baseline. Schema models pending formal contract reconciliation in Phase 2.
+            <p className="leading-relaxed">
+              Expert visit committee (EVC) scheduling, on-site verification records, observation
+              documentation, and formal committee proceeding logs.
             </p>
           </StatusCard>
 
           <StatusCard
-            title="Real-Time Transport"
-            icon={<Radio className="w-5 h-5" />}
-            badge={<Badge variant="default">Socket.IO</Badge>}
+            title="Compliance &amp; Audit Oversight"
+            icon={<CheckCircle2 className="w-5 h-5 text-primary" />}
+            badge={<Badge variant="subtle">Oversight</Badge>}
           >
-            <p className="mt-1">
-              Approved Socket.IO transport with server-side authentication and institutional room scope validation.
+            <p className="leading-relaxed">
+              Post-approval compliance obligation monitoring, deadline alerting, and tamper-resistant
+              chronological audit logging for regulatory accountability.
             </p>
           </StatusCard>
         </div>
       </section>
 
-      {/* Specifications & Boundaries Section */}
+      {/* Regulatory Framework & Standards Card */}
       <section id="specifications" className="space-y-4">
-        <h2 className="text-xl font-semibold text-text-strong">
-          Approved Specifications &amp; Architectural Governance
-        </h2>
-
-        <div className="bg-surface border border-border rounded-xl p-6 shadow-xs space-y-4">
-          <div className="flex items-start space-x-3">
-            <FileCheck2 className="w-6 h-6 text-primary shrink-0 mt-0.5" />
-            <div className="space-y-2">
+        <div className="bg-surface border border-border rounded-xl p-6 sm:p-8 shadow-xs space-y-4">
+          <div className="flex items-start gap-3.5">
+            <div className="w-9 h-9 rounded-lg bg-surface-subtle text-primary flex items-center justify-center shrink-0 mt-0.5">
+              <BookOpen className="w-5 h-5" />
+            </div>
+            <div className="space-y-1.5">
               <h3 className="text-base font-semibold text-text-strong">
-                Authoritative Specification Baseline
+                Regulatory Framework &amp; Procedural Guidelines
               </h3>
               <p className="text-sm text-text-secondary leading-relaxed">
-                The canonical project requirements, UI/UX tokens, database schemas, and API contracts are
-                preserved byte-for-byte in <code className="bg-surface-muted px-1.5 py-0.5 rounded text-xs font-mono">docs/project-baseline/</code>.
-                Current authority for technology decisions is governed by{' '}
-                <span className="font-semibold text-text-primary">
-                  docs/project-baseline/refined/FINAL_DECISIONS_AND_SUPERSEDING_CORRECTIONS.md
-                </span>.
+                Workflow rules, scrutiny checkpoints, and procedural stages in this prototype reflect public
+                provisions of the AICTE Approval Process Handbook (APH 2024–2027) and approved problem statement
+                specifications (SIH26262).
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
-            <div className="p-3 bg-surface-muted rounded-lg border border-border/80">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-text-strong">Architecture</span>
-                <ShieldCheck className="w-4 h-4 text-primary" />
-              </div>
-              <p className="text-xs text-text-secondary mt-1">Modular monolith, custom RBAC, no microservices</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+            <div className="p-3.5 bg-surface-muted rounded-lg border border-border/70">
+              <span className="text-xs font-semibold text-text-strong block">Role-Enforced Workflows</span>
+              <p className="text-xs text-text-secondary mt-1">Strict separation of statutory duties &bull; RBAC</p>
             </div>
 
-            <div className="p-3 bg-surface-muted rounded-lg border border-border/80">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-text-strong">Authentication Direction</span>
-                <ShieldCheck className="w-4 h-4 text-primary" />
-              </div>
-              <p className="text-xs text-text-secondary mt-1">Auth.js / JWT HTTP-only cookie; Better Auth excluded</p>
+            <div className="p-3.5 bg-surface-muted rounded-lg border border-border/70">
+              <span className="text-xs font-semibold text-text-strong block">Session Protection</span>
+              <p className="text-xs text-text-secondary mt-1">HttpOnly session cookies &bull; Single-use token rotation</p>
             </div>
 
-            <div className="p-3 bg-surface-muted rounded-lg border border-border/80">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-text-strong">Statutory Boundary</span>
-                <ShieldCheck className="w-4 h-4 text-primary" />
-              </div>
-              <p className="text-xs text-text-secondary mt-1">Human authority preserved; AI/OCR strictly deferred</p>
+            <div className="p-3.5 bg-surface-muted rounded-lg border border-border/70">
+              <span className="text-xs font-semibold text-text-strong block">Human Decision Boundary</span>
+              <p className="text-xs text-text-secondary mt-1">Statutory decisions reserved exclusively for authorized officials</p>
             </div>
           </div>
         </div>

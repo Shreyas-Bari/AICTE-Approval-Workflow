@@ -38,10 +38,10 @@ export const Header: React.FC = () => {
                 Overview
               </Link>
               <a
-                href="#specifications"
+                href="#workflow"
                 className="px-3 py-1.5 rounded-md text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-colors"
               >
-                Specifications
+                Workflow
               </a>
               <Link
                 to="/login"
