@@ -16,3 +16,6 @@ export const AppRoutes: React.FC = () => {
     </Routes>
   );
 };
+
+export { ProtectedRoute } from './ProtectedRoute';
+export type { ProtectedRouteProps } from './ProtectedRoute';

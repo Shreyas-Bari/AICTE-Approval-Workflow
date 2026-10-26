@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ShieldCheck,
   Mail,
@@ -23,9 +23,126 @@ interface FormErrors {
   password?: string;
 }
 
+/**
+ * Safely resolves and validates a return destination from location.state.from.
+ *
+ * Requirements:
+ * 1. Validates the pathname separately from search and hash.
+ * 2. Rejects external URLs, protocol-relative paths, raw or encoded backslash bypasses,
+ *    control characters, malformed percent-encoding in the pathname, and /login redirect loops.
+ * 3. Preserves valid internal pathname, query, and hash exactly as supplied without
+ *    rewriting or decoding query/hash values.
+ * 4. Falls back safely to '/' for missing or invalid destinations.
+ */
+export function resolveSafeReturnPath(fromState: unknown): string {
+  if (!fromState) {
+    return '/';
+  }
+
+  let rawPathname = '';
+  let rawSearch = '';
+  let rawHash = '';
+
+  if (typeof fromState === 'string') {
+    const trimmed = fromState.trim();
+    const match = trimmed.match(/^([^?#]*)(?:\?([^#]*))?(?:#(.*))?$/);
+    if (match) {
+      rawPathname = match[1];
+      rawSearch = match[2] !== undefined ? `?${match[2]}` : '';
+      rawHash = match[3] !== undefined ? `#${match[3]}` : '';
+    }
+  } else if (typeof fromState === 'object' && fromState !== null) {
+    const loc = fromState as { pathname?: unknown; search?: unknown; hash?: unknown };
+    const objPath = typeof loc.pathname === 'string' ? loc.pathname.trim() : '';
+    const match = objPath.match(/^([^?#]*)(?:\?([^#]*))?(?:#(.*))?$/);
+    if (match) {
+      rawPathname = match[1];
+      const embeddedSearch = match[2] !== undefined ? `?${match[2]}` : '';
+      const embeddedHash = match[3] !== undefined ? `#${match[3]}` : '';
+      rawSearch = typeof loc.search === 'string' && loc.search.trim() ? loc.search.trim() : embeddedSearch;
+      rawHash = typeof loc.hash === 'string' && loc.hash.trim() ? loc.hash.trim() : embeddedHash;
+    }
+  }
+
+  // Must have a non-empty pathname starting with a single slash, not protocol-relative '//'
+  if (!rawPathname || !rawPathname.startsWith('/') || rawPathname.startsWith('//')) {
+    return '/';
+  }
+
+  // Reject raw backslashes and control characters in the pathname
+  if (rawPathname.includes('\\') || /[\u0000-\u001F\u007F]/.test(rawPathname)) {
+    return '/';
+  }
+
+  // Reject control characters in search or hash
+  if (/[\u0000-\u001F\u007F]/.test(rawSearch) || /[\u0000-\u001F\u007F]/.test(rawHash)) {
+    return '/';
+  }
+
+  // Validate the pathname across nested percent-encoded layers (bounded to max 3 iterations)
+  // to catch nested bypasses (e.g. '/%252fevil.com' -> '/%2fevil.com' -> '//evil.com',
+  // '/%255cevil.com' -> '/%5cevil.com' -> '/\\evil.com', '/%256c%256f%2567%2569%256e' -> '/login')
+  let currentDecoded = rawPathname;
+  let converged = false;
+  const maxIterations = 3;
+
+  for (let i = 0; i < maxIterations; i++) {
+    let nextDecoded = '';
+    try {
+      nextDecoded = decodeURIComponent(currentDecoded);
+    } catch {
+      // Malformed percent-encoding in the pathname is invalid
+      return '/';
+    }
+
+    // Invariants enforced at EVERY decoded layer:
+    if (!nextDecoded.startsWith('/') || nextDecoded.startsWith('//') || nextDecoded.includes('\\')) {
+      return '/';
+    }
+
+    if (/[\u0000-\u001F\u007F]/.test(nextDecoded)) {
+      return '/';
+    }
+
+    // Disallow external URI schemes within the pathname (e.g. '/https://', '/javascript:')
+    if (nextDecoded.includes(':')) {
+      return '/';
+    }
+
+    // Prevent redirect loops to login (case-insensitive, trailing slashes removed)
+    const normalized = nextDecoded.toLowerCase().replace(/\/+$/, '') || '/';
+    if (normalized === '/login') {
+      return '/';
+    }
+
+    // If no further percent-encoded sequences remain, the pathname has converged
+    if (!/%[0-9a-fA-F]{2}/.test(nextDecoded)) {
+      converged = true;
+      break;
+    }
+
+    currentDecoded = nextDecoded;
+  }
+
+  // Reject pathnames with unbounded or excessively deep percent-encoding
+  if (!converged) {
+    return '/';
+  }
+
+  // Normalize search/hash prefixes if needed while preserving query/hash contents untouched
+  const searchPart = rawSearch ? (rawSearch.startsWith('?') ? rawSearch : `?${rawSearch}`) : '';
+  const hashPart = rawHash ? (rawHash.startsWith('#') ? rawHash : `#${rawHash}`) : '';
+
+  return `${rawPathname}${searchPart}${hashPart}`;
+}
+
 export const LoginPage: React.FC = () => {
   const { isAuthenticated, isLoading: isAuthLoading, login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const rawFrom = (location.state as { from?: unknown } | null)?.from;
+  const returnPath = resolveSafeReturnPath(rawFrom);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,12 +151,12 @@ export const LoginPage: React.FC = () => {
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // If already authenticated, redirect to portal overview
+  // If already authenticated, redirect to validated target destination or root
   useEffect(() => {
     if (!isAuthLoading && isAuthenticated) {
-      navigate('/', { replace: true });
+      navigate(returnPath, { replace: true });
     }
-  }, [isAuthenticated, isAuthLoading, navigate]);
+  }, [isAuthenticated, isAuthLoading, navigate, returnPath]);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -100,8 +217,8 @@ export const LoginPage: React.FC = () => {
         password,
       });
 
-      // Successful login navigates to root dashboard/overview
-      navigate('/', { replace: true });
+      // Successful login navigates to validated return path or root overview
+      navigate(returnPath, { replace: true });
     } catch (err: unknown) {
       if (err instanceof ApiError) {
         if (err.code === 'INVALID_CREDENTIALS') {
