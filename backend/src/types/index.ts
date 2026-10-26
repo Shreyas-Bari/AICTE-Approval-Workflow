@@ -36,3 +36,5 @@ export interface ApiErrorResponse {
     details?: unknown;
   };
 }
+
+export * from './auth.js';

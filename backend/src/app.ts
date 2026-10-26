@@ -1,5 +1,6 @@
 import express, { Express } from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { env } from './config/env.js';
 import { apiRouter } from './routes/api.router.js';
 import { healthRouter } from './routes/health.router.js';
@@ -18,6 +19,7 @@ export function createApp(): Express {
     })
   );
 
+  app.use(cookieParser());
   app.use(express.json());
   app.use(requestLogger);
 

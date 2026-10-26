@@ -18,6 +18,10 @@ if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;
 }
 
+export function getDatabaseClient(): PrismaClient {
+  return prisma;
+}
+
 export interface DatabaseHealthResult {
   status: 'connected' | 'disconnected' | 'unconfigured';
   latencyMs?: number;

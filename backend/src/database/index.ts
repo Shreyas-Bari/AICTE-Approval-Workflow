@@ -1,5 +1,6 @@
 export {
   prisma,
+  getDatabaseClient,
   connectDatabase,
   disconnectDatabase,
   checkDatabaseHealth,
