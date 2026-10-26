@@ -235,10 +235,19 @@ export async function apiFetch<T>(
     !(body instanceof ArrayBuffer)
   ) {
     body = JSON.stringify(body);
-    if (!headers.has('Content-Type')) {
-      headers.set('Content-Type', 'application/json');
-    }
   }
+
+  if (
+    body !== undefined &&
+    body !== null &&
+    !(body instanceof FormData) &&
+    !(body instanceof Blob) &&
+    !(body instanceof ArrayBuffer) &&
+    !headers.has('Content-Type')
+  ) {
+    headers.set('Content-Type', 'application/json');
+  }
+
 
   if (MUTATING_METHODS.has(method)) {
     const csrfToken = getCsrfTokenFromCookie();

@@ -43,6 +43,12 @@ export const Header: React.FC = () => {
               >
                 Specifications
               </a>
+              <Link
+                to="/login"
+                className="ml-2 inline-flex items-center justify-center px-3.5 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-hover shadow-xs transition-colors"
+              >
+                Sign In
+              </Link>
             </nav>
           </div>
         </div>
