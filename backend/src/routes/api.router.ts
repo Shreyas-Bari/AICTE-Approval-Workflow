@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { healthRouter } from './health.router.js';
 import { authRouter } from './auth.router.js';
 import { institutionRouter } from './institution.router.js';
+import { applicationCategoryRouter } from './applicationCategory.router.js';
 import { getMeHandler } from '../controllers/auth.controller.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { csrfProtection } from '../middleware/csrf.middleware.js';
@@ -23,5 +24,7 @@ v1Router.get('/me', csrfProtection, authenticate, getMeHandler);
 // Canonical institutions endpoints (§8.4: /api/v1/institutions/*)
 v1Router.use('/institutions', institutionRouter);
 
-apiRouter.use('/v1', v1Router);
+// Canonical application categories catalogue endpoints (§8.4: /api/v1/application-categories/*)
+v1Router.use('/application-categories', applicationCategoryRouter);
 
+apiRouter.use('/v1', v1Router);
