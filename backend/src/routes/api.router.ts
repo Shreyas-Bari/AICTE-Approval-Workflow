@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { healthRouter } from './health.router.js';
 import { authRouter } from './auth.router.js';
+import { institutionRouter } from './institution.router.js';
 import { getMeHandler } from '../controllers/auth.controller.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { csrfProtection } from '../middleware/csrf.middleware.js';
@@ -19,4 +20,8 @@ v1Router.use('/auth', authRouter);
 // Canonical current-user profile endpoint (§8.2: GET /api/v1/me)
 v1Router.get('/me', csrfProtection, authenticate, getMeHandler);
 
+// Canonical institutions endpoints (§8.4: /api/v1/institutions/*)
+v1Router.use('/institutions', institutionRouter);
+
 apiRouter.use('/v1', v1Router);
+

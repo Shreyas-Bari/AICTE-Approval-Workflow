@@ -2,7 +2,9 @@ import {
   ApiErrorDetail,
   ApiErrorEnvelope,
   ApiHealthStatus,
+  ApiResponse,
   ChangePasswordPayload,
+  InstitutionProfile,
   LoginCredentials,
   LoginResponse,
   MeResponse,
@@ -368,6 +370,27 @@ export const apiClient = {
       method: 'POST',
       body: JSON.stringify(payload),
     });
+  },
+
+  /**
+   * Lists institutions within caller's permitted scope at GET /api/v1/institutions (§8.4).
+   */
+  getInstitutions(): Promise<ApiResponse<{ institutions: InstitutionProfile[] }>> {
+    return apiFetch<ApiResponse<{ institutions: InstitutionProfile[] }>>('/api/v1/institutions', {
+      method: 'GET',
+    });
+  },
+
+  /**
+   * Reads permitted institution details at GET /api/v1/institutions/:institutionId (§8.4).
+   */
+  getInstitution(institutionId: string): Promise<ApiResponse<{ institution: InstitutionProfile }>> {
+    return apiFetch<ApiResponse<{ institution: InstitutionProfile }>>(
+      `/api/v1/institutions/${encodeURIComponent(institutionId)}`,
+      {
+        method: 'GET',
+      }
+    );
   },
 };
 
