@@ -111,6 +111,7 @@ export class ApplicationService {
       internalReference,
       externalReference: null,
       institutionId: input.institutionId,
+      institutionName: membership.institution.name,
       categoryId: category.id,
       categoryCode: category.categoryCode,
       categoryName: category.name,

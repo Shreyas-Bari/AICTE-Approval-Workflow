@@ -17,6 +17,7 @@ export interface ApplicationDraft {
   internalReference: string;
   externalReference: string | null;
   institutionId: string;
+  institutionName: string;
   categoryId: string;
   categoryCode: string;
   categoryName: string;
