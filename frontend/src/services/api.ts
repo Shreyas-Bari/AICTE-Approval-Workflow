@@ -3,12 +3,16 @@ import {
   ApiErrorEnvelope,
   ApiHealthStatus,
   ApiResponse,
+  ApplicationCategorySummary,
+  ApplicationDraft,
   ChangePasswordPayload,
+  CreateApplicationDraftPayload,
   InstitutionProfile,
   LoginCredentials,
   LoginResponse,
   MeResponse,
   MessageResponse,
+  UpdateApplicationDraftPayload,
 } from '../types';
 
 /**
@@ -392,7 +396,72 @@ export const apiClient = {
       }
     );
   },
+
+  /**
+   * Lists approved application categories at GET /api/v1/application-categories (§8.4).
+   */
+  getApplicationCategories(): Promise<
+    ApiResponse<{ categories: ApplicationCategorySummary[] }> & { meta?: { catalogueVersion?: string } }
+  > {
+    return apiFetch<
+      ApiResponse<{ categories: ApplicationCategorySummary[] }> & { meta?: { catalogueVersion?: string } }
+    >('/api/v1/application-categories', {
+      method: 'GET',
+    });
+  },
+
+  /**
+   * Lists applications within caller's institution scope at GET /api/v1/applications (§8.5).
+   */
+  getApplications(): Promise<ApiResponse<{ applications: ApplicationDraft[] }>> {
+    return apiFetch<ApiResponse<{ applications: ApplicationDraft[] }>>('/api/v1/applications', {
+      method: 'GET',
+    });
+  },
+
+  /**
+   * Reads permitted application draft by ID at GET /api/v1/applications/:applicationId (§8.5).
+   */
+  getApplication(applicationId: string): Promise<ApiResponse<{ application: ApplicationDraft }>> {
+    return apiFetch<ApiResponse<{ application: ApplicationDraft }>>(
+      `/api/v1/applications/${encodeURIComponent(applicationId)}`,
+      {
+        method: 'GET',
+      }
+    );
+  },
+
+  /**
+   * Creates a new application draft at POST /api/v1/applications (§8.5).
+   */
+  createApplicationDraft(
+    payload: CreateApplicationDraftPayload
+  ): Promise<ApiResponse<{ application: ApplicationDraft }>> {
+    return apiFetch<ApiResponse<{ application: ApplicationDraft }>>('/api/v1/applications', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /**
+   * Edits an application draft at PATCH /api/v1/applications/:applicationId (§8.5, FR-005).
+   */
+  updateApplicationDraft(
+    applicationId: string,
+    payload: UpdateApplicationDraftPayload
+  ): Promise<ApiResponse<{ application: ApplicationDraft }>> {
+    return apiFetch<ApiResponse<{ application: ApplicationDraft }>>(
+      `/api/v1/applications/${encodeURIComponent(applicationId)}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+      }
+    );
+  },
 };
+
+export const api = apiClient;
+
 
 /**
  * Preserved API health check.

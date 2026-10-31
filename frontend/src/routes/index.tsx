@@ -5,6 +5,7 @@ import { LandingPage } from '../pages/public/LandingPage';
 import { LoginPage } from '../pages/public/LoginPage';
 import { NotFoundPage } from '../pages/public/NotFoundPage';
 import { InstitutionProfilePage } from '../pages/institution/InstitutionProfilePage';
+import { ApplicationsPage } from '../pages/institution/ApplicationsPage';
 import { ProtectedRoute } from './ProtectedRoute';
 
 export const AppRoutes: React.FC = () => {
@@ -17,6 +18,14 @@ export const AppRoutes: React.FC = () => {
           element={
             <ProtectedRoute>
               <InstitutionProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="institution/applications"
+          element={
+            <ProtectedRoute>
+              <ApplicationsPage />
             </ProtectedRoute>
           }
         />

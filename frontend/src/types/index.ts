@@ -19,3 +19,4 @@ export interface BreadcrumbItem {
 
 export * from './auth';
 export * from './institution';
+export * from './application';

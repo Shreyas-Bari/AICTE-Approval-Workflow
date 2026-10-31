@@ -61,12 +61,20 @@ export const Header: React.FC = () => {
                 Workflow
               </a>
               {isAuthenticated && (
-                <Link
-                  to="/institution/profile"
-                  className="px-3 py-1.5 rounded-md text-sm font-medium text-text-primary hover:bg-surface-subtle hover:text-primary transition-colors"
-                >
-                  Institution Profile
-                </Link>
+                <>
+                  <Link
+                    to="/institution/profile"
+                    className="px-3 py-1.5 rounded-md text-sm font-medium text-text-primary hover:bg-surface-subtle hover:text-primary transition-colors"
+                  >
+                    Institution Profile
+                  </Link>
+                  <Link
+                    to="/institution/applications"
+                    className="px-3 py-1.5 rounded-md text-sm font-medium text-text-primary hover:bg-surface-subtle hover:text-primary transition-colors"
+                  >
+                    Applications
+                  </Link>
+                </>
               )}
 
               {isLoading ? (
